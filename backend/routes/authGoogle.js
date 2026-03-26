@@ -4,9 +4,9 @@ import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
 
 const router = express.Router()
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 
 router.post('/google', async (req, res) => {
+  const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
   const { credential } = req.body
   try {
     const ticket = await client.verifyIdToken({
@@ -18,8 +18,16 @@ router.post('/google', async (req, res) => {
 
     let user = await User.findOne({ email })
     if (!user) {
-      user = await User.create({ name, email, googleId, picture, password: null })
-    }
+    user = await User.create({
+    name,
+    email,
+    googleId,
+    picture,
+    password: null,
+    role: 'user',        // ← default role
+    companyName: '',     // ← empty default
+  })
+}
 
     const token = jwt.sign(
       { id: user._id, email: user.email },
@@ -29,6 +37,7 @@ router.post('/google', async (req, res) => {
 
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, picture } })
   } catch (err) {
+    console.error('Google verify error:', err.message)
     res.status(401).json({ message: 'Google auth failed' })
   }
 })

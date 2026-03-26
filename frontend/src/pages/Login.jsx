@@ -7,9 +7,16 @@ export default function Login({ onLogin, onSwitch }) {
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
 
-  // ─── Google One Tap setup ───────────────────────────────────────────────────
-  // ─── Google One Tap setup ───────────────────────────────────────────────────
-useEffect(() => {
+ useEffect(() => {
+  if (window.google?.accounts?.id) {
+    // already loaded, just render the button
+    window.google.accounts.id.renderButton(
+      document.getElementById('google-signin-btn'),
+      { theme: 'outline', size: 'large', width: 348, text: 'continue_with', shape: 'rectangular' }
+    )
+    return
+  }
+
   const script = document.createElement('script')
   script.src = 'https://accounts.google.com/gsi/client'
   script.async = true
@@ -19,19 +26,28 @@ useEffect(() => {
   script.onload = () => {
     window.google.accounts.id.initialize({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      callback: handleGoogleResponse,
+      callback: async (response) => {
+        setGoogleLoading(true)
+        setError('')
+        try {
+          const res = await axios.post(
+            `${import.meta.env.VITE_API_URL}/api/auth/google`,
+            { credential: response.credential }
+          )
+          localStorage.setItem('token', res.data.token)
+          localStorage.setItem('user', JSON.stringify(res.data.user))
+          onLogin(res.data.user)
+        } catch (err) {
+          setError(err.response?.data?.message || 'Google sign-in failed')
+        } finally {
+          setGoogleLoading(false)
+        }
+      },
     })
 
-    // ✅ Render the real Google button instead of calling prompt()
     window.google.accounts.id.renderButton(
       document.getElementById('google-signin-btn'),
-      {
-        theme: 'outline',
-        size: 'large',
-        width: 348,   // match your card width
-        text: 'continue_with',
-        shape: 'rectangular',
-      }
+      { theme: 'outline', size: 'large', width: 348, text: 'continue_with', shape: 'rectangular' }
     )
   }
 
@@ -39,25 +55,6 @@ useEffect(() => {
     if (document.body.contains(script)) document.body.removeChild(script)
   }
 }, [])
-
-  const handleGoogleResponse = async (response) => {
-    setGoogleLoading(true)
-    setError('')
-    try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/google`,
-        { credential: response.credential }
-      )
-      localStorage.setItem('token', res.data.token)
-      localStorage.setItem('user', JSON.stringify(res.data.user))
-      onLogin(res.data.user)
-    } catch (err) {
-      setError(err.response?.data?.message || 'Google sign-in failed')
-    } finally {
-      setGoogleLoading(false)
-    }
-  }
-  // ───────────────────────────────────────────────────────────────────────────
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -123,11 +120,17 @@ useEffect(() => {
         )}
 
         {/* ── Google Sign-In Button ── */}
-       {/* ── Google Sign-In Button ── */}
-<div
-  id="google-signin-btn"
-  style={{ marginBottom: 20, minHeight: 44 }}
-/>
+        <div
+          id="google-signin-btn"
+          style={{ marginBottom: 20, minHeight: 44 }}
+        />
+
+        {googleLoading && (
+          <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>
+            Signing in with Google...
+          </p>
+        )}
+
         {/* ── Divider ── */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20,

@@ -86,10 +86,19 @@ export default function CountryIntelligence({ data }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeIn 0.3s ease' }}>
 
+      <style>{`
+        .ci-trend-cat { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .ci-controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+        .ci-controls > div:first-child { flex: 1 1 240px; }
+        @media (max-width: 768px) {
+          .ci-controls > * { flex: 1 1 100% !important; }
+        }
+      `}</style>
+
       {/* Controls */}
       <div style={card}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end' }}>
-          <div style={{ flex: '1 1 240px' }}>
+        <div className="ci-controls">
+          <div>
             <Select value={selCtry} onChange={setSelCtry} options={ctyOpts}
               label="Select Importing Country" wide />
           </div>
@@ -124,8 +133,8 @@ export default function CountryIntelligence({ data }) {
         <StatCard label="Unique Commodities" value={stats.uniqueP} color={COLORS.amber} />
       </div>
 
-      {/* ── Trend + category split — stacks on mobile ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
+      {/* Trend + category split — stacks on mobile */}
+      <div className="ci-trend-cat">
         <div style={card}>
           <SectionHeader
             title={`Import Trend — ${selCtry}`}
@@ -166,7 +175,7 @@ export default function CountryIntelligence({ data }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
             {catSplit.map((c, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                <div style={{ width: 10, height: 10, borderRadius: 2, background: PALETTE[i * 3 % PALETTE.length] }} />
+                <div style={{ width: 10, height: 10, borderRadius: 2, background: PALETTE[i * 3 % PALETTE.length], flexShrink: 0 }} />
                 <span style={{ color: COLORS.subtle, flex: 1 }}>{trunc(c.category, 28)}</span>
                 <span style={{ color: COLORS.text, fontWeight: 600 }}>{fmtVal(c.val)}</span>
               </div>
@@ -181,36 +190,44 @@ export default function CountryIntelligence({ data }) {
           title={`Top ${topN} Commodities Imported by ${selCtry}`}
           subtitle={selYear === 'all' ? 'Across all years (2020-21 to 2024-25)' : `Year: ${selYear}`}
         />
-        <ResponsiveContainer width="100%" height={Math.max(300, topN * 26)}>
-          <BarChart data={topProds.map(r => ({ ...r, product: r.productShort }))} layout="vertical" margin={{ left: 10 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
-            <XAxis type="number" tick={{ fill: COLORS.muted, fontSize: 10 }}
-              tickFormatter={v => metric === 'val' ? `$${v}M` : `${(v / 1000).toFixed(0)}K`} />
-            <YAxis type="category" dataKey="product" tick={{ fill: COLORS.subtle, fontSize: 10 }} width={190} />
-            <Tooltip content={<CustomTooltip mode={metric} />} />
-            <Bar dataKey={metric === 'val' ? 'val' : 'qty'} name={metric === 'val' ? 'Value' : 'Qty'}
-              radius={[0, 4, 4, 0]}>
-              {topProds.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <div style={{ overflowX: 'auto' }}>
+          <div style={{ minWidth: 320 }}>
+            <ResponsiveContainer width="100%" height={Math.max(300, topN * 26)}>
+              <BarChart data={topProds.map(r => ({ ...r, product: r.productShort }))} layout="vertical" margin={{ left: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
+                <XAxis type="number" tick={{ fill: COLORS.muted, fontSize: 10 }}
+                  tickFormatter={v => metric === 'val' ? `$${v}M` : `${(v / 1000).toFixed(0)}K`} />
+                <YAxis type="category" dataKey="product" tick={{ fill: COLORS.subtle, fontSize: 10 }} width={160} />
+                <Tooltip content={<CustomTooltip mode={metric} />} />
+                <Bar dataKey={metric === 'val' ? 'val' : 'qty'} name={metric === 'val' ? 'Value' : 'Qty'}
+                  radius={[0, 4, 4, 0]}>
+                  {topProds.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       {/* Stacked commodity trend */}
       <div style={card}>
         <SectionHeader title="Top 8 Commodities — Trend Over Years" subtitle="Stacked import value by commodity" />
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={stackedData}>
-            <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
-            <XAxis dataKey="year" tick={{ fill: COLORS.muted, fontSize: 11 }} />
-            <YAxis tick={{ fill: COLORS.muted, fontSize: 10 }} tickFormatter={v => `$${v}M`} />
-            <Tooltip content={<CustomTooltip mode="val" />} />
-            <Legend wrapperStyle={{ fontSize: 10, color: COLORS.subtle, paddingTop: 8 }} />
-            {top8Keys.map((p, i) => (
-              <Bar key={p} dataKey={p} stackId="a" fill={PALETTE[i % PALETTE.length]} />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
+        <div style={{ overflowX: 'auto' }}>
+          <div style={{ minWidth: 320 }}>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={stackedData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
+                <XAxis dataKey="year" tick={{ fill: COLORS.muted, fontSize: 11 }} />
+                <YAxis tick={{ fill: COLORS.muted, fontSize: 10 }} tickFormatter={v => `$${v}M`} />
+                <Tooltip content={<CustomTooltip mode="val" />} />
+                <Legend wrapperStyle={{ fontSize: 10, color: COLORS.subtle, paddingTop: 8 }} />
+                {top8Keys.map((p, i) => (
+                  <Bar key={p} dataKey={p} stackId="a" fill={PALETTE[i % PALETTE.length]} />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       {/* Data table */}
@@ -228,6 +245,7 @@ export default function CountryIntelligence({ data }) {
                     textAlign: 'left', padding: '8px 12px',
                     color: COLORS.muted, borderBottom: `1px solid ${COLORS.border}`,
                     fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em',
+                    whiteSpace: 'nowrap',
                   }}>
                     {h}
                   </th>
@@ -237,15 +255,15 @@ export default function CountryIntelligence({ data }) {
             <tbody>
               {topProds.map((r, i) => (
                 <tr key={i} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                  <td style={{ padding: '8px 12px', color: COLORS.muted }}>#{i + 1}</td>
-                  <td style={{ padding: '8px 12px', color: COLORS.text, fontWeight: 500 }}>{r.fullP}</td>
+                  <td style={{ padding: '8px 12px', color: COLORS.muted }}># {i + 1}</td>
+                  <td style={{ padding: '8px 12px', color: COLORS.text, fontWeight: 500, minWidth: 160 }}>{r.fullP}</td>
                   <td style={{ padding: '8px 12px' }}>
                     <CategoryBadge category={r.category} />
                   </td>
-                  <td style={{ padding: '8px 12px', color: COLORS.accent }}>
+                  <td style={{ padding: '8px 12px', color: COLORS.accent, whiteSpace: 'nowrap' }}>
                     {fmtVal(r.val)}
                   </td>
-                  <td style={{ padding: '8px 12px', color: COLORS.purple }}>
+                  <td style={{ padding: '8px 12px', color: COLORS.purple, whiteSpace: 'nowrap' }}>
                     {fmtQty(r.qty)}
                   </td>
                 </tr>

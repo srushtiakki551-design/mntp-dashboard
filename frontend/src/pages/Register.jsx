@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 
 export default function Register({ onLogin, onSwitch }) {
@@ -7,6 +7,55 @@ export default function Register({ onLogin, onSwitch }) {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
+
+  useEffect(() => {
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.renderButton(
+        document.getElementById('google-register-btn'),
+        { theme: 'outline', size: 'large', width: 348, text: 'signup_with', shape: 'rectangular' }
+      )
+      return
+    }
+
+    const script = document.createElement('script')
+    script.src = 'https://accounts.google.com/gsi/client'
+    script.async = true
+    script.defer = true
+    document.body.appendChild(script)
+
+    script.onload = () => {
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        callback: async (response) => {
+          setGoogleLoading(true)
+          setError('')
+          try {
+            const res = await axios.post(
+              `${import.meta.env.VITE_API_URL}/api/auth/google`,
+              { credential: response.credential }
+            )
+            localStorage.setItem('token', res.data.token)
+            localStorage.setItem('user', JSON.stringify(res.data.user))
+            onLogin(res.data.user)
+          } catch (err) {
+            setError(err.response?.data?.message || 'Google sign-up failed')
+          } finally {
+            setGoogleLoading(false)
+          }
+        },
+      })
+
+      window.google.accounts.id.renderButton(
+        document.getElementById('google-register-btn'),
+        { theme: 'outline', size: 'large', width: 348, text: 'signup_with', shape: 'rectangular' }
+      )
+    }
+
+    return () => {
+      if (document.body.contains(script)) document.body.removeChild(script)
+    }
+  }, [])
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -80,6 +129,28 @@ export default function Register({ onLogin, onSwitch }) {
           </div>
         )}
 
+        {/* ── Google Sign-Up Button ── */}
+        <div
+          id="google-register-btn"
+          style={{ marginBottom: 20, minHeight: 44 }}
+        />
+
+        {googleLoading && (
+          <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>
+            Signing up with Google...
+          </p>
+        )}
+
+        {/* ── Divider ── */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20,
+        }}>
+          <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
+          <span style={{ color: '#94a3b8', fontSize: 12 }}>or register with email</span>
+          <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
+        </div>
+
+        {/* ── Email/Password Form ── */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {fields.map(f => (
             <div key={f.name} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

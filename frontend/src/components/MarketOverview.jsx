@@ -64,18 +64,29 @@ export default function MarketOverview({ data }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'fadeIn 0.3s ease' }}>
 
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        .two-col-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .cat-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+        .cat-pie { flex: 0 0 300px; }
+        @media (max-width: 768px) {
+          .two-col-grid { grid-template-columns: 1fr !important; }
+          .cat-pie { flex: 0 0 100% !important; }
+        }
+      `}</style>
+
       {/* Year selector */}
       <div style={card}>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
           <Select value={selYear} onChange={setSelYear} options={YEARS} label="Select Year" />
-          <p style={{ flex: 1, fontSize: 12, color: COLORS.muted }}>
+          <p style={{ flex: 1, fontSize: 12, color: COLORS.muted, minWidth: 200 }}>
             India's agricultural exports — viewed from the perspective of importing nations
           </p>
         </div>
       </div>
 
       {/* KPI row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
         <StatCard
           label="Total Export Value"
           value={fmtVal(cur?.val || 0)}
@@ -114,15 +125,15 @@ export default function MarketOverview({ data }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Side-by-side: top countries + top products */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+      {/* Side-by-side: top countries + top products — stacks on mobile */}
+      <div className="two-col-grid">
         <div style={card}>
           <SectionHeader title="Top 20 Importing Countries" subtitle={selYear} />
           <ResponsiveContainer width="100%" height={440}>
             <BarChart data={topCountries} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
               <XAxis type="number" tick={{ fill: COLORS.muted, fontSize: 10 }} tickFormatter={v => `$${v}M`} />
-              <YAxis type="category" dataKey="country" tick={{ fill: COLORS.subtle, fontSize: 10 }} width={130} />
+              <YAxis type="category" dataKey="country" tick={{ fill: COLORS.subtle, fontSize: 10 }} width={100} />
               <Tooltip content={<CustomTooltip mode="val" />} />
               <Bar dataKey="val" name="Value" radius={[0, 4, 4, 0]}>
                 {topCountries.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
@@ -137,7 +148,7 @@ export default function MarketOverview({ data }) {
             <BarChart data={topProducts} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
               <XAxis type="number" tick={{ fill: COLORS.muted, fontSize: 10 }} tickFormatter={v => `$${v}M`} />
-              <YAxis type="category" dataKey="product" tick={{ fill: COLORS.subtle, fontSize: 10 }} width={205} />
+              <YAxis type="category" dataKey="product" tick={{ fill: COLORS.subtle, fontSize: 10 }} width={160} />
               <Tooltip content={<CustomTooltip mode="val" />} />
               <Bar dataKey="val" name="Value" radius={[0, 4, 4, 0]}>
                 {topProducts.map((_, i) => <Cell key={i} fill={PALETTE[(i + 4) % PALETTE.length]} />)}
@@ -150,8 +161,8 @@ export default function MarketOverview({ data }) {
       {/* Category split */}
       <div style={card}>
         <SectionHeader title="Category Distribution" subtitle={`Fresh vs Processed — ${selYear}`} />
-        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-          <div style={{ flex: '0 0 300px' }}>
+        <div className="cat-row">
+          <div className="cat-pie">
             <ResponsiveContainer width="100%" height={180}>
               <PieChart>
                 <Pie
@@ -166,12 +177,12 @@ export default function MarketOverview({ data }) {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, minWidth: 200 }}>
             {catSplit.map((c, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 12, height: 12, borderRadius: 3, background: PALETTE[i * 3 % PALETTE.length] }} />
+                <div style={{ width: 12, height: 12, borderRadius: 3, background: PALETTE[i * 3 % PALETTE.length], flexShrink: 0 }} />
                 <span style={{ color: COLORS.text, flex: 1, fontSize: 13, fontWeight: 500 }}>{c.category}</span>
-                <span style={{ color: COLORS.accent, fontFamily: "'Space Mono', monospace", fontSize: 14, fontWeight: 700 }}>
+                <span style={{ color: COLORS.accent, fontSize: 14, fontWeight: 700 }}>
                   {fmtVal(c.val)}
                 </span>
               </div>

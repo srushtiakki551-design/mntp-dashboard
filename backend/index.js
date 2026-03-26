@@ -1,7 +1,6 @@
 import dotenv from 'dotenv'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
-import authGoogle from './routes/authGoogle.js'
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -14,6 +13,7 @@ import cors from 'cors'
 import https from 'https'
 import authRoutes from './routes/auth.js'
 import feedbackRoutes from './routes/feedback.js'
+import authGoogle from './routes/authGoogle.js'
 
 const app = express()
 app.use(cors())
