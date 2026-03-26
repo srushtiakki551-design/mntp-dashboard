@@ -12,7 +12,7 @@ export default function Feedback({ user, onClose }) {
     setLoading(true)
     setError('')
     try {
-      await axios.post('http://localhost:5000/api/feedback', {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/feedback`, {
         userId: user.id,
         name: user.name,
         email: user.email,

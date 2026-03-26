@@ -9,6 +9,7 @@ dotenv.config({ path: join(__dirname, '.env') })
 import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
+import https from 'https'
 import authRoutes from './routes/auth.js'
 import feedbackRoutes from './routes/feedback.js'
 
@@ -24,6 +25,15 @@ app.use('/api/auth', authRoutes)
 app.use('/api/feedback', feedbackRoutes)
 
 app.get('/', (req, res) => res.send('API running'))
+
+// Self-ping every 10 minutes to prevent sleep
+setInterval(() => {
+  https.get(process.env.RENDER_URL, res => {
+    console.log(`Self-ping status: ${res.statusCode}`)
+  }).on('error', err => {
+    console.error('Self-ping error:', err.message)
+  })
+}, 10 * 60 * 1000)
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running on port ${process.env.PORT}`)
