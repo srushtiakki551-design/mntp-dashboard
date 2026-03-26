@@ -39,39 +39,41 @@ export default function Register({ onLogin, onSwitch }) {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#0a0e1a',
+      background: '#f8fafc',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      fontFamily: 'Inter, sans-serif',
+      fontFamily: 'Arial, sans-serif',
       padding: '24px 0',
     }}>
       <div style={{
-        background: '#111827',
-        border: '1px solid #1f2937',
+        background: '#ffffff',
+        border: '1px solid #e2e8f0',
         borderRadius: 16,
         padding: '40px 36px',
         width: '100%',
         maxWidth: 420,
+        boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
       }}>
+
         <div style={{ fontSize: 36, textAlign: 'center', marginBottom: 12 }}>🌾</div>
 
         <h1 style={{
-          color: '#f1f5f9', fontSize: 22, fontWeight: 800,
+          color: '#0f172a', fontSize: 22, fontWeight: 800,
           textAlign: 'center', margin: '0 0 6px',
-          fontFamily: 'Syne, sans-serif',
+          fontFamily: 'Arial, sans-serif',
         }}>
           MNTP Dashboard
         </h1>
 
-        <p style={{ color: '#6b7280', fontSize: 13, textAlign: 'center', marginBottom: 28 }}>
+        <p style={{ color: '#94a3b8', fontSize: 13, textAlign: 'center', marginBottom: 28 }}>
           Create your account
         </p>
 
         {error && (
           <div style={{
-            background: '#1c0a0a', border: '1px solid #7f1d1d',
-            color: '#fca5a5', borderRadius: 8,
+            background: '#fef2f2', border: '1px solid #fecaca',
+            color: '#dc2626', borderRadius: 8,
             padding: '10px 14px', fontSize: 13, marginBottom: 16,
           }}>
             {error}
@@ -81,7 +83,10 @@ export default function Register({ onLogin, onSwitch }) {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {fields.map(f => (
             <div key={f.name} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <label style={{
+                fontSize: 12, color: '#64748b', fontWeight: 600,
+                textTransform: 'uppercase', letterSpacing: '0.05em',
+              }}>
                 {f.label}
               </label>
               <input
@@ -92,10 +97,10 @@ export default function Register({ onLogin, onSwitch }) {
                 placeholder={f.placeholder}
                 required
                 style={{
-                  background: '#1e293b', border: '1px solid #334155',
-                  borderRadius: 8, color: '#f1f5f9',
+                  background: '#f8fafc', border: '1px solid #e2e8f0',
+                  borderRadius: 8, color: '#0f172a',
                   padding: '10px 14px', fontSize: 14,
-                  outline: 'none', fontFamily: 'inherit',
+                  outline: 'none', fontFamily: 'Arial, sans-serif',
                 }}
               />
             </div>
@@ -105,10 +110,10 @@ export default function Register({ onLogin, onSwitch }) {
             type="submit"
             disabled={loading}
             style={{
-              background: '#00d4aa', color: '#0a0e1a',
+              background: '#2563eb', color: '#ffffff',
               border: 'none', borderRadius: 8,
               padding: '12px', fontSize: 14, fontWeight: 700,
-              marginTop: 4, fontFamily: 'inherit',
+              marginTop: 4, fontFamily: 'Arial, sans-serif',
               opacity: loading ? 0.7 : 1,
               cursor: loading ? 'not-allowed' : 'pointer',
             }}
@@ -117,11 +122,11 @@ export default function Register({ onLogin, onSwitch }) {
           </button>
         </form>
 
-        <p style={{ color: '#6b7280', fontSize: 13, textAlign: 'center', marginTop: 20 }}>
+        <p style={{ color: '#94a3b8', fontSize: 13, textAlign: 'center', marginTop: 20 }}>
           Already have an account?{' '}
           <span
             onClick={onSwitch}
-            style={{ color: '#00d4aa', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
+            style={{ color: '#2563eb', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
           >
             Sign In
           </span>

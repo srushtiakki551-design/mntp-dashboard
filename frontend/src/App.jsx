@@ -6,6 +6,7 @@ import ProductTrends from './components/ProductTrends'
 import CountryIntelligence from './components/CountryIntelligence'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Feedback from './pages/Feedback'
 
 const NAV = [
   { id: 'overview',  label: '📊 Market Overview' },
@@ -14,20 +15,19 @@ const NAV = [
 ]
 
 export default function App() {
-  const [user, setUser]         = useState(null)
-  const [authPage, setAuthPage] = useState('login')
-  const [data, setData]         = useState(null)
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState(null)
-  const [view, setView]         = useState('overview')
+  const [user, setUser]             = useState(null)
+  const [authPage, setAuthPage]     = useState('login')
+  const [data, setData]             = useState(null)
+  const [loading, setLoading]       = useState(true)
+  const [error, setError]           = useState(null)
+  const [view, setView]             = useState('overview')
+  const [showFeedback, setShowFeedback] = useState(false)
 
-  // Restore session on page load
   useEffect(() => {
     const stored = localStorage.getItem('user')
     if (stored) setUser(JSON.parse(stored))
   }, [])
 
-  // Load trade data once user is logged in
   useEffect(() => {
     if (!user) return
     import('./data/apeda_compact.json')
@@ -41,9 +41,7 @@ export default function App() {
       })
   }, [user])
 
-  const handleLogin = (userData) => {
-    setUser(userData)
-  }
+  const handleLogin = (userData) => setUser(userData)
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -54,7 +52,6 @@ export default function App() {
     setAuthPage('login')
   }
 
-  // Auth screens
   if (!user) {
     if (authPage === 'register') {
       return <Register onLogin={handleLogin} onSwitch={() => setAuthPage('login')} />
@@ -62,14 +59,15 @@ export default function App() {
     return <Login onLogin={handleLogin} onSwitch={() => setAuthPage('register')} />
   }
 
-  // Dashboard
   return (
-    <div style={{ minHeight: '100vh', background: COLORS.darkBg, color: COLORS.text }}>
+    <div style={{ minHeight: '100vh', background: '#f8fafc', color: '#0f172a', fontFamily: 'Arial, sans-serif' }}>
 
+      {/* Header */}
       <header style={{
-        background: '#0d1424',
-        borderBottom: `1px solid ${COLORS.border}`,
+        background: '#ffffff',
+        borderBottom: '1px solid #e2e8f0',
         position: 'sticky', top: 0, zIndex: 100,
+        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
       }}>
         <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px' }}>
           <div style={{
@@ -77,11 +75,12 @@ export default function App() {
             justifyContent: 'space-between',
             height: 64, gap: 20, flexWrap: 'wrap',
           }}>
+
             {/* Logo */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 8,
-                background: 'linear-gradient(135deg, #00d4aa, #7c3aed)',
+                background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
                 display: 'flex', alignItems: 'center',
                 justifyContent: 'center', fontSize: 18,
               }}>
@@ -90,12 +89,12 @@ export default function App() {
               <div>
                 <div style={{
                   fontSize: 16, fontWeight: 800,
-                  fontFamily: "'Syne', sans-serif",
-                  color: COLORS.text, lineHeight: 1.2,
+                  fontFamily: 'Arial, sans-serif',
+                  color: '#0f172a', lineHeight: 1.2,
                 }}>
                   MNTP Trade Intelligence
                 </div>
-                <div style={{ fontSize: 11, color: COLORS.muted }}>
+                <div style={{ fontSize: 11, color: '#94a3b8' }}>
                   India Agri-Export Analytics • 2020–25
                 </div>
               </div>
@@ -110,11 +109,12 @@ export default function App() {
                   style={{
                     padding: '8px 16px', borderRadius: 8,
                     border: 'none', cursor: 'pointer',
-                    fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
-                    background: view === item.id ? '#00d4aa15' : 'transparent',
-                    color: view === item.id ? COLORS.accent : COLORS.subtle,
+                    fontSize: 13, fontWeight: 600,
+                    fontFamily: 'Arial, sans-serif',
+                    background: view === item.id ? '#eff6ff' : 'transparent',
+                    color: view === item.id ? '#2563eb' : '#64748b',
                     borderBottom: view === item.id
-                      ? `2px solid ${COLORS.accent}`
+                      ? '2px solid #2563eb'
                       : '2px solid transparent',
                     transition: 'all 0.2s',
                   }}
@@ -124,27 +124,45 @@ export default function App() {
               ))}
             </nav>
 
-            {/* User info + logout */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {/* Right side */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.text }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#0f172a' }}>
                   {user.name}
                 </div>
-                <div style={{ fontSize: 11, color: COLORS.muted }}>
+                <div style={{ fontSize: 11, color: '#94a3b8' }}>
                   {user.role} · {user.companyName}
                 </div>
               </div>
+
               <button
-                onClick={handleLogout}
+                onClick={() => setShowFeedback(true)}
                 style={{
-                  background: 'transparent',
-                  border: `1px solid ${COLORS.border}`,
-                  color: COLORS.subtle,
+                  background: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  color: '#2563eb',
                   borderRadius: 8,
                   padding: '6px 14px',
                   cursor: 'pointer',
                   fontSize: 12,
-                  fontFamily: 'inherit',
+                  fontWeight: 600,
+                  fontFamily: 'Arial, sans-serif',
+                }}
+              >
+                Feedback
+              </button>
+
+              <button
+                onClick={handleLogout}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #e2e8f0',
+                  color: '#64748b',
+                  borderRadius: 8,
+                  padding: '6px 14px',
+                  cursor: 'pointer',
+                  fontSize: 12,
+                  fontFamily: 'Arial, sans-serif',
                 }}
               >
                 Logout
@@ -154,6 +172,7 @@ export default function App() {
         </div>
       </header>
 
+      {/* Main */}
       <main style={{ maxWidth: 1400, margin: '0 auto', padding: 24 }}>
         {loading && (
           <div style={{
@@ -163,19 +182,19 @@ export default function App() {
           }}>
             <div style={{
               width: 48, height: 48,
-              border: `3px solid ${COLORS.border}`,
-              borderTopColor: COLORS.accent,
+              border: '3px solid #e2e8f0',
+              borderTopColor: '#2563eb',
               borderRadius: '50%',
               animation: 'spin 1s linear infinite',
             }} />
-            <p style={{ color: COLORS.muted, fontSize: 14 }}>Loading trade data…</p>
+            <p style={{ color: '#94a3b8', fontSize: 14 }}>Loading trade data…</p>
           </div>
         )}
 
         {error && (
           <div style={{
-            background: '#1c0a0a', border: '1px solid #7f1d1d',
-            borderRadius: 12, padding: 24, color: '#fca5a5',
+            background: '#fef2f2', border: '1px solid #fecaca',
+            borderRadius: 12, padding: 24, color: '#dc2626',
           }}>
             <strong>Error loading data:</strong> {error}
           </div>
@@ -190,14 +209,21 @@ export default function App() {
         )}
       </main>
 
+      {/* Footer */}
       <footer style={{
-        borderTop: `1px solid ${COLORS.border}`,
+        borderTop: '1px solid #e2e8f0',
         padding: '16px 24px', textAlign: 'center',
-        fontSize: 11, color: '#374151', marginTop: 40,
+        fontSize: 11, color: '#94a3b8', marginTop: 40,
+        fontFamily: 'Arial, sans-serif',
       }}>
         MNTP Trade Intelligence Dashboard • Data: Agricultural &amp; Processed Food Products
         Export Development Authority • Values in USD Million
       </footer>
+
+      {/* Feedback modal */}
+      {showFeedback && (
+        <Feedback user={user} onClose={() => setShowFeedback(false)} />
+      )}
     </div>
   )
 }
