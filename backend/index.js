@@ -1,6 +1,8 @@
 import dotenv from 'dotenv'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
+import authGoogle from './routes/authGoogle.js'
+
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -23,6 +25,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 app.use('/api/auth', authRoutes)
 app.use('/api/feedback', feedbackRoutes)
+app.use('/api/auth', authGoogle)
 
 app.get('/', (req, res) => res.send('API running'))
 

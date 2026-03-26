@@ -1,10 +1,63 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 
 export default function Login({ onLogin, onSwitch }) {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
+
+  // ─── Google One Tap setup ───────────────────────────────────────────────────
+  // ─── Google One Tap setup ───────────────────────────────────────────────────
+useEffect(() => {
+  const script = document.createElement('script')
+  script.src = 'https://accounts.google.com/gsi/client'
+  script.async = true
+  script.defer = true
+  document.body.appendChild(script)
+
+  script.onload = () => {
+    window.google.accounts.id.initialize({
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      callback: handleGoogleResponse,
+    })
+
+    // ✅ Render the real Google button instead of calling prompt()
+    window.google.accounts.id.renderButton(
+      document.getElementById('google-signin-btn'),
+      {
+        theme: 'outline',
+        size: 'large',
+        width: 348,   // match your card width
+        text: 'continue_with',
+        shape: 'rectangular',
+      }
+    )
+  }
+
+  return () => {
+    if (document.body.contains(script)) document.body.removeChild(script)
+  }
+}, [])
+
+  const handleGoogleResponse = async (response) => {
+    setGoogleLoading(true)
+    setError('')
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/google`,
+        { credential: response.credential }
+      )
+      localStorage.setItem('token', res.data.token)
+      localStorage.setItem('user', JSON.stringify(res.data.user))
+      onLogin(res.data.user)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Google sign-in failed')
+    } finally {
+      setGoogleLoading(false)
+    }
+  }
+  // ───────────────────────────────────────────────────────────────────────────
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -69,6 +122,22 @@ export default function Login({ onLogin, onSwitch }) {
           </div>
         )}
 
+        {/* ── Google Sign-In Button ── */}
+       {/* ── Google Sign-In Button ── */}
+<div
+  id="google-signin-btn"
+  style={{ marginBottom: 20, minHeight: 44 }}
+/>
+        {/* ── Divider ── */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20,
+        }}>
+          <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
+          <span style={{ color: '#94a3b8', fontSize: 12 }}>or sign in with email</span>
+          <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
+        </div>
+
+        {/* ── Email/Password Form ── */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
